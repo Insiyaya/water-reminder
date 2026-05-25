@@ -20,8 +20,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupStatusBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem?.button {
-            button.title = "💧"
-            button.font = NSFont.systemFont(ofSize: 15)
+            let cfg = NSImage.SymbolConfiguration(pointSize: 15, weight: .medium)
+            if let img = NSImage(systemSymbolName: "drop.fill", accessibilityDescription: "Water Reminder")?
+                .withSymbolConfiguration(cfg) {
+                let templateImg = img
+                templateImg.isTemplate = true
+                button.image = templateImg
+                button.imageScaling = .scaleProportionallyDown
+            }
         }
         buildMenu()
     }
@@ -29,22 +35,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func buildMenu() {
         let menu = NSMenu()
 
-        let title = NSMenuItem(title: "💧 Water Reminder", action: nil, keyEquivalent: "")
+        let title = NSMenuItem(title: "Water Reminder", action: nil, keyEquivalent: "")
+        title.image = menuIcon("drop.fill")
         title.isEnabled = false
         menu.addItem(title)
         menu.addItem(.separator())
 
-        let nextItem = NSMenuItem(title: "Next reminder: calculating…", action: nil, keyEquivalent: "")
+        let nextItem = NSMenuItem(title: "Next reminder: calculating...", action: nil, keyEquivalent: "")
+        nextItem.image = menuIcon("clock")
         nextItem.isEnabled = false
         self.nextReminderMenuItem = nextItem
         menu.addItem(nextItem)
         menu.addItem(.separator())
 
-        let drinkNow = NSMenuItem(title: "💧  Hydrate Now!", action: #selector(showNow), keyEquivalent: "d")
+        let drinkNow = NSMenuItem(title: "Hydrate Now!", action: #selector(showNow), keyEquivalent: "d")
+        drinkNow.image = menuIcon("drop.fill")
         drinkNow.target = self
         menu.addItem(drinkNow)
 
-        let snooze = NSMenuItem(title: "⏰  Snooze 5 minutes", action: #selector(snooze5), keyEquivalent: "")
+        let snooze = NSMenuItem(title: "Snooze 5 minutes", action: #selector(snooze5), keyEquivalent: "")
+        snooze.image = menuIcon("clock.arrow.circlepath")
         snooze.target = self
         menu.addItem(snooze)
         menu.addItem(.separator())
@@ -58,15 +68,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             intervalMenu.addItem(item)
             intervalMenuItems.append(item)
         }
-        let intervalItem = NSMenuItem(title: "⏱  Reminder Interval", action: nil, keyEquivalent: "")
+        let intervalItem = NSMenuItem(title: "Reminder Interval", action: nil, keyEquivalent: "")
+        intervalItem.image = menuIcon("timer")
         intervalItem.submenu = intervalMenu
         menu.addItem(intervalItem)
 
         menu.addItem(.separator())
         let quit = NSMenuItem(title: "Quit Water Reminder", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        quit.image = menuIcon("xmark.circle")
         menu.addItem(quit)
 
         statusItem?.menu = menu
+    }
+
+    private func menuIcon(_ symbolName: String) -> NSImage? {
+        let cfg = NSImage.SymbolConfiguration(pointSize: 13, weight: .regular)
+        let img = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
+            .withSymbolConfiguration(cfg)
+        img?.isTemplate = true
+        return img
     }
 
     private func startMenuUpdateTimer() {

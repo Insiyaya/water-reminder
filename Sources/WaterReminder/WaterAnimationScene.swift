@@ -56,13 +56,13 @@ class WaterAnimationScene: SKScene {
     // MARK: - Main sequence
 
     private func startSequence() {
-        // 0.15s — glass drops
+        // 0.15s -glass drops
         run(.sequence([
             .wait(forDuration: 0.15),
             .run { [weak self] in self?.dropGlass() }
         ]))
 
-        // 0.85s — wave begins rising after impact
+        // 0.85s -wave begins rising after impact
         run(.sequence([
             .wait(forDuration: 0.85),
             .run { [weak self] in
@@ -70,7 +70,7 @@ class WaterAnimationScene: SKScene {
             }
         ]))
 
-        // 5.5s — auto dismiss
+        // 5.5s -auto dismiss
         run(.sequence([
             .wait(forDuration: 5.5),
             .run { [weak self] in self?.beginDismiss() }
@@ -325,24 +325,25 @@ class WaterAnimationScene: SKScene {
         let cx = size.width / 2
         let cy = size.height * 0.40
 
-        // Big emoji drop
-        let dropEmoji = SKLabelNode()
-        dropEmoji.text      = "💧"
-        dropEmoji.fontSize  = 110
-        dropEmoji.position  = CGPoint(x: cx, y: cy + 130)
-        dropEmoji.zPosition = 25
-        dropEmoji.alpha     = 0
-        dropEmoji.setScale(0.3)
-        addChild(dropEmoji)
-        dropEmoji.run(.sequence([
+        // Big drop icon (SF Symbol)
+        let dropIcon = symbolSprite(
+            name: "drop.fill",
+            pointSize: 110,
+            tint: NSColor(red: 0.35, green: 0.80, blue: 1.00, alpha: 1.0)
+        )
+        dropIcon.position  = CGPoint(x: cx, y: cy + 130)
+        dropIcon.zPosition = 25
+        dropIcon.alpha     = 0
+        dropIcon.setScale(0.3)
+        addChild(dropIcon)
+        dropIcon.run(.sequence([
             .group([
                 .fadeIn(withDuration: 0.15),
                 .scale(to: 1.12, duration: 0.20)
             ]),
             .scale(to: 1.0, duration: 0.10)
         ]))
-        // float gently
-        dropEmoji.run(.repeatForever(.sequence([
+        dropIcon.run(.repeatForever(.sequence([
             .moveBy(x: 0, y: 12, duration: 1.1),
             .moveBy(x: 0, y: -12, duration: 1.1)
         ])))
@@ -367,14 +368,14 @@ class WaterAnimationScene: SKScene {
         fact.run(.sequence([.wait(forDuration: 0.22), .fadeIn(withDuration: 0.30)]))
 
         // Snooze button
-        let snoozeBtn = makeButton(text: "⏰  Snooze 5 min", name: "snoozeBtn")
+        let snoozeBtn = makeButton(text: "Snooze 5 min", name: "snoozeBtn", iconSymbol: "clock.arrow.circlepath")
         snoozeBtn.position = CGPoint(x: cx - 140, y: cy - 80)
         snoozeBtn.zPosition = 25
         addChild(snoozeBtn)
         snoozeBtn.run(.sequence([.wait(forDuration: 0.35), .fadeIn(withDuration: 0.25)]))
 
         // Dismiss button
-        let dismissBtn = makeButton(text: "✓  Done — I drank!", name: "dismissBtn", primary: true)
+        let dismissBtn = makeButton(text: "Done - I drank!", name: "dismissBtn", iconSymbol: "checkmark.circle.fill", primary: true)
         dismissBtn.position = CGPoint(x: cx + 140, y: cy - 80)
         dismissBtn.zPosition = 25
         addChild(dismissBtn)
@@ -404,12 +405,12 @@ class WaterAnimationScene: SKScene {
         return label
     }
 
-    private func makeButton(text: String, name: String, primary: Bool = false) -> SKNode {
+    private func makeButton(text: String, name: String, iconSymbol: String? = nil, primary: Bool = false) -> SKNode {
         let container = SKNode()
         container.name  = name
         container.alpha = 0
 
-        let bg = SKShapeNode(rectOf: CGSize(width: 220, height: 50), cornerRadius: 25)
+        let bg = SKShapeNode(rectOf: CGSize(width: 230, height: 50), cornerRadius: 25)
         bg.name        = name
         bg.fillColor   = primary
             ? NSColor(red: 0.18, green: 0.58, blue: 1.00, alpha: 0.90)
@@ -420,17 +421,38 @@ class WaterAnimationScene: SKScene {
         bg.lineWidth   = 1.5
         container.addChild(bg)
 
+        let labelOffsetX: CGFloat = iconSymbol != nil ? 14 : 0
+
         let label = SKLabelNode()
         label.name      = name
         label.text      = text
         label.fontName  = "Helvetica"
-        label.fontSize  = 18
+        label.fontSize  = 17
         label.fontColor = .white
         label.verticalAlignmentMode   = .center
         label.horizontalAlignmentMode = .center
+        label.position  = CGPoint(x: labelOffsetX, y: 0)
         container.addChild(label)
 
+        if let sym = iconSymbol {
+            let icon = symbolSprite(name: sym, pointSize: 17, tint: .white)
+            icon.name     = name
+            icon.position = CGPoint(x: labelOffsetX - label.frame.width / 2 - icon.size.width / 2 - 6, y: 0)
+            container.addChild(icon)
+        }
+
         return container
+    }
+
+    private func symbolSprite(name: String, pointSize: CGFloat, tint: NSColor) -> SKSpriteNode {
+        let sizeCfg  = NSImage.SymbolConfiguration(pointSize: pointSize, weight: .medium)
+        let colorCfg = NSImage.SymbolConfiguration(paletteColors: [tint])
+        let combined = sizeCfg.applying(colorCfg)
+        guard let image = NSImage(systemSymbolName: name, accessibilityDescription: nil)?
+            .withSymbolConfiguration(combined) else {
+            return SKSpriteNode()
+        }
+        return SKSpriteNode(texture: SKTexture(image: image), size: image.size)
     }
 
     // MARK: - Wave update loop

@@ -37,7 +37,7 @@ class OverlayWindowController: NSObject {
             defer: false,
             screen: screen
         )
-        win.level = .screenSaver          // above everything — Slack, Chrome, etc.
+        win.level = .screenSaver          // above everything: Slack, Chrome, etc.
         win.isOpaque = false
         win.backgroundColor = .clear
         win.hasShadow = false
