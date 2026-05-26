@@ -1,31 +1,28 @@
 import Foundation
 
-class ReminderScheduler {
+final class ReminderScheduler {
     private var timer: Timer?
     private var intervalSeconds: TimeInterval
     private(set) var nextReminderDate: Date?
-    private let callback: () -> Void
+    private let onFire: () -> Void
 
-    init(intervalMinutes: Int = 25, callback: @escaping () -> Void) {
+    init(intervalMinutes: Int = 25, onFire: @escaping () -> Void) {
         self.intervalSeconds = TimeInterval(intervalMinutes * 60)
-        self.callback = callback
+        self.onFire = onFire
     }
 
-    func start() {
-        scheduleNext()
-    }
+    // MARK: - Control
 
-    func reset() {
-        timer?.invalidate()
-        scheduleNext()
-    }
+    func start()  { scheduleNext() }
+
+    func reset()  { timer?.invalidate(); scheduleNext() }
 
     func snooze(minutes: Int) {
         timer?.invalidate()
-        let snoozeInterval = TimeInterval(minutes * 60)
-        nextReminderDate = Date().addingTimeInterval(snoozeInterval)
-        timer = Timer.scheduledTimer(withTimeInterval: snoozeInterval, repeats: false) { [weak self] _ in
-            self?.callback()
+        let delay = TimeInterval(minutes * 60)
+        nextReminderDate = Date().addingTimeInterval(delay)
+        timer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
+            self?.onFire()
             self?.scheduleNext()
         }
     }
@@ -36,11 +33,13 @@ class ReminderScheduler {
         scheduleNext()
     }
 
+    // MARK: - Private
+
     private func scheduleNext() {
         timer?.invalidate()
         nextReminderDate = Date().addingTimeInterval(intervalSeconds)
         timer = Timer.scheduledTimer(withTimeInterval: intervalSeconds, repeats: false) { [weak self] _ in
-            self?.callback()
+            self?.onFire()
             self?.scheduleNext()
         }
     }
