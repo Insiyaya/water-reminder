@@ -59,10 +59,7 @@ class WaterAnimationScene: SKScene {
                 self?.waveTargetHeight = (self?.size.height ?? 300) * 0.20
             }
         ]))
-        run(.sequence([
-            .wait(forDuration: 5.5),
-            .run { [weak self] in self?.beginDismiss() }
-        ]))
+        // No auto-dismiss: overlay stays until the user clicks or presses a key.
     }
 
     // MARK: - Input
