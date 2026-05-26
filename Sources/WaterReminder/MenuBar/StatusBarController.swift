@@ -64,7 +64,7 @@ final class StatusBarController: NSObject {
         menu.addItem(intervalSubmenu())
         menu.addItem(.separator())
         menu.addItem(makeItem(title: "Quit Water Reminder", icon: "xmark.circle",
-                              action: #selector(NSApplication.terminate(_:)), key: "q"))
+                              action: #selector(didTapQuit), key: "q"))
 
         statusItem?.menu = menu
     }
@@ -111,6 +111,7 @@ final class StatusBarController: NSObject {
 
     @objc private func didTapShowNow()              { onShowNow?() }
     @objc private func didTapSnooze()               { onSnooze?() }
+    @objc private func didTapQuit()                 { NSApp.terminate(nil) }
 
     @objc private func didTapInterval(_ sender: NSMenuItem) {
         intervalMinutes = sender.tag
